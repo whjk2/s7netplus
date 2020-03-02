@@ -1,9 +1,9 @@
-﻿using S7.Net.Types;
+﻿using S7.Net.Protocol;
+using S7.Net.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
-using S7.Net.Protocol;
 
 //Implement synchronous methods here
 namespace S7.Net
@@ -286,7 +286,7 @@ namespace S7.Net
                 //Must be writing a bit value as bitAdr is specified
                 if (value is bool)
                 {
-                    WriteBit(dataType, db, startByteAdr, bitAdr, (bool) value);
+                    WriteBit(dataType, db, startByteAdr, bitAdr, (bool)value);
                 }
                 else if (value is int intValue)
                 {
@@ -324,7 +324,9 @@ namespace S7.Net
         /// <param name="startByteAdr">Start bytes on the PLC</param>
         public void WriteStruct(object structValue, int db, int startByteAdr = 0)
         {
-            WriteStructAsync(structValue, db, startByteAdr).GetAwaiter().GetResult();
+            //WriteStructAsync(structValue, db, startByteAdr).GetAwaiter().GetResult();
+            var bytes = Struct.ToBytes(structValue).ToList();
+            WriteBytes(DataType.DataBlock, db, startByteAdr, bytes.ToArray());
         }
 
         /// <summary>
@@ -434,7 +436,7 @@ namespace S7.Net
 
             try
             {
-                var value = new[] {bitValue ? (byte) 1 : (byte) 0};
+                var value = new[] { bitValue ? (byte)1 : (byte)0 };
                 varCount = value.Length;
                 // first create the header
                 int packageSize = 35 + value.Length;
